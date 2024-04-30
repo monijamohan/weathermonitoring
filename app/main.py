@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from pymongo import MongoClient
 
 from .utils import get_weather_data
-from .models import ForcastTemperature
+from .models import ForcastTemperature, ForcastTemperatureResponse
 
 logger = logging.getLogger()
 
@@ -92,12 +92,10 @@ async def get_default_map(date=None):
 
 @app.post(
     "/forcast_temperature",
-    description="Temerature forcast fore the given days. It will take a minimum threshold temperature and maximum threshold temperature. Then returns the deviation status of of actual temperature."
+    description="Temerature forcast fore the given days. It will take a minimum threshold temperature and maximum threshold temperature. Then returns the deviation status of of actual temperature.",
+    response_model=ForcastTemperatureResponse
 )
 async def forcast_temperature_data(payload: ForcastTemperature):
-    """
-    lat, long, loc, st_d, end_d, min, max
-    """
     weather_dataset = get_weather_data(lat=payload.latitude,
                                     long=payload.longitude,
                                     location=payload.location,
