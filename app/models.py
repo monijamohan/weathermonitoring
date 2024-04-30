@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import List
+
+from pydantic import BaseModel, Field
 
 
 class LocationMeta(BaseModel):
@@ -16,11 +17,13 @@ class LocationMeta(BaseModel):
         examples=[17.95093, 14.65]
     )
 
+
 class LocationSearchResult(LocationMeta):
     country: str = Field(
-        title="Country name",\
+        title="Country name", \
         examples=["Sweden", "United States"]
     )
+
 
 class LocationAPI(LocationMeta):
     min_temperature: float = Field(
@@ -34,7 +37,6 @@ class LocationAPI(LocationMeta):
     )
 
 
-
 class ForcastTemperature(LocationAPI):
     start_date: str = Field(
         title="Date in string format.",
@@ -46,7 +48,6 @@ class ForcastTemperature(LocationAPI):
     )
 
 
-
 class ForcastTemperatureResponse(LocationAPI):
     date: str = Field(
         title="Date in string format.",
@@ -54,8 +55,10 @@ class ForcastTemperatureResponse(LocationAPI):
     )
     doc_id: str = Field(
         title="Doc-Id created by combination of 'DATE_LATITUDE_LONGITUDE' ",
-        examples=["2e0e3929260060dc2b04062f5b7229ad5d9606d323b545273139dfce0c1b6f0e", "29ad5d9606d323b545273139dfce0c1b6f0e"]
+        examples=["2e0e3929260060dc2b04062f5b7229ad5d9606d323b545273139dfce0c1b6f0e",
+                  "29ad5d9606d323b545273139dfce0c1b6f0e"]
     )
+
 
 LocationListResponse = List[ForcastTemperatureResponse]
 LocationSearchResponse = List[LocationSearchResult]

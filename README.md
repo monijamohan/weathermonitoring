@@ -10,8 +10,6 @@
 ![Image Alt Text](HLD.jpeg)
 
 
-
-
 ---
 
 

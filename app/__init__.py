@@ -1,6 +1,6 @@
-from .main import app  
 import logging
 
+from .main import app
 
 # # Config Default # To log in the Running container
 logging.basicConfig(
@@ -13,8 +13,3 @@ logging.basicConfig(
 file_handler = logging.FileHandler('fast_api.log')
 file_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(message)s'))
 logging.getLogger().addHandler(file_handler)
-
-
-
-
-

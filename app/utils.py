@@ -1,6 +1,7 @@
 import hashlib
-import logging as logger # constructor call
+import logging as logger  # constructor call
 import traceback
+
 import requests
 
 
@@ -25,15 +26,14 @@ def get_location_data(name):
         logger.error(f"Request failed for the Location API {url}")
         return status_code
     logger.info(f"Got 200 response for Location API {url}")
-    
+
     resp_data = resp.json()
     if not resp_data.get('results'):
         logger.warning(f"No data found for Location API {url}")
-        return 204 # No data found status
+        return 204  # No data found status
     else:
         return resp_data['results']
 
-    
 
 def get_weather_data(lat, long, location=None, start_date=None, end_date=None):
     """

@@ -6,11 +6,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from pymongo import MongoClient
 
-from .utils import get_weather_data, get_location_data
 from .models import ForcastTemperature, LocationListResponse, LocationSearchResponse, LocationSearchResult
+from .utils import get_weather_data, get_location_data
 
 logger = logging.getLogger()
-
 
 # MongoDB Connection Initialize
 # # Todo: Enable Retry Connection Pool
@@ -37,6 +36,7 @@ with open("/code/app/DEFAULT_LOCATION.json", 'r') as file:  # Default location c
     logger.info("Reading DEFAULT_LOCATION.json ...")
     default_location = json.load(file)
 
+
 def upsert_temperature(temperature_data):
     result = temp_collection.update_one({'uniqueId': temperature_data['doc_id']}, {'$set': temperature_data},
                                         upsert=True)
@@ -54,6 +54,7 @@ app = FastAPI(
     version=open("VERSION.txt").read().strip()
 )
 
+
 @app.get("/default_map",
          name="Default Map Data",
          description="Returns a Map data for the locations in DB. If DB is not accessible it will show the default location",
@@ -68,7 +69,7 @@ async def get_default_map(date=None):
     date = datetime.now().strftime("%Y-%m-%d") if not date else date
     # Approach1: Fetch from DB for the current date
     if hasMongoObj:
-        #todo:
+        # todo:
         result_obj = temp_collection.find({"date": date})
         weather_dataset = []
         for weather_data in result_obj:
@@ -113,7 +114,7 @@ async def location_search_by_name(name):
             results.append(doc_.dict())
         return JSONResponse(content=results)
     else:
-        raise HTTPException(status_code=404,  detail="Server Error")
+        raise HTTPException(status_code=404, detail="Server Error")
 
 
 @app.post(
@@ -122,22 +123,21 @@ async def location_search_by_name(name):
     description="Temerature forcast for the given days. It will take a minimum threshold temperature and maximum threshold temperature. Then returns the deviation status of of actual temperature.",
     response_model=LocationListResponse,
     responses={
-             200: {"description": "Valid response as a JSON format."},
-             429: {"description": "Too many requests"},
-             404: {"description": "Not found error!"},
-             204: {"description": "Data not found for the location!"}
-         }
+        200: {"description": "Valid response as a JSON format."},
+        429: {"description": "Too many requests"},
+        404: {"description": "Not found error!"},
+        204: {"description": "Data not found for the location!"}
+    }
 )
 async def forcast_temperature_data(payload: ForcastTemperature):
     weather_dataset = get_weather_data(lat=payload.latitude,
-                                    long=payload.longitude,
-                                    location=payload.location,
-                                    start_date=payload.start_date, end_date=payload.end_date)
+                                       long=payload.longitude,
+                                       location=payload.location,
+                                       start_date=payload.start_date, end_date=payload.end_date)
 
     if not weather_dataset:
         logger.warning(f"No weather data found for given payload: {payload}")
         raise HTTPException(status_code=404, detail="Data Not Found!")
-
     # yield JSONResponse(content=weather_dataset)
 
     # Write responses to MongoDB
@@ -145,7 +145,8 @@ async def forcast_temperature_data(payload: ForcastTemperature):
         if hasMongoObj:
             upsert_temperature(weather_data)
         # check for deviation:
-        if (weather_data['max_temperature'] > payload.max_temperature) and (weather_data['min_temperature'] < payload.min_temperature):
+        if (weather_data['max_temperature'] > payload.max_temperature) and (
+                weather_data['min_temperature'] < payload.min_temperature):
             weather_data['deviation_status'] = "incrased&decreased"
         elif weather_data['max_temperature'] > payload.max_temperature:
             weather_data['deviation_status'] = "increased"
