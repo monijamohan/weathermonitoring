@@ -1,11 +1,19 @@
 # Weather Forcast API
 
-### System Prerequests:
+### System Prerequisites:
 
 - **MongoDB**:  create `temperature` collection under the `weatherdata` DB.
 - **Docker**: should be pre-installed on the system.
 
-### 
+### High Level Diagram of the implementation:
+
+![Image Alt Text](HLD.jpeg)
+
+
+
+
+---
+
 
 ### Command to build Docker image:
 

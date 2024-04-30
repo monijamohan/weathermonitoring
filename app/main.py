@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from pymongo import MongoClient
 
 from .utils import get_weather_data
+from .models import ForcastTemperature
 
 logger = logging.getLogger()
 
@@ -86,6 +87,40 @@ async def get_default_map(date=None):
         logger.warning(f"No weather data found for Default location: {default_location}")
         raise HTTPException(status_code=404, detail="Data Not Found!")
     logger.info(f"Results fetched from API for the location {default_location['name']}")
-    # for weather_data in weather_dataset:
-    #     upsert_temperature(weather_data)
+    return JSONResponse(content=weather_dataset)
+
+
+@app.post(
+    "/forcast_temperature",
+    description="Temerature forcast fore the given days. It will take a minimum threshold temperature and maximum threshold temperature. Then returns the deviation status of of actual temperature."
+)
+async def forcast_temperature_data(payload: ForcastTemperature):
+    """
+    lat, long, loc, st_d, end_d, min, max
+    """
+    weather_dataset = get_weather_data(lat=payload.latitude,
+                                    long=payload.longitude,
+                                    location=payload.location,
+                                    start_date=payload.start_date, end_date=payload.end_date)
+
+    if not weather_dataset:
+        logger.warning(f"No weather data found for given payload: {payload}")
+        raise HTTPException(status_code=404, detail="Data Not Found!")
+
+    # yield JSONResponse(content=weather_dataset)
+
+    # Write responses to MongoDB
+    for weather_data in weather_dataset:
+        if hasMongoObj:
+            upsert_temperature(weather_data)
+        # check for deviation:
+        if (weather_data['max_temperature'] > payload.max_temperature) and (weather_data['min_temperature'] < payload.min_temperature):
+            weather_data['deviation_status'] = "incrased&decreased"
+        elif weather_data['max_temperature'] > payload.max_temperature:
+            weather_data['deviation_status'] = "increased"
+        elif weather_data['min_temperature'] < payload.min_temperature:
+            weather_data['deviation_status'] = "decreased"
+        else:
+            weather_data['deviation_status'] = "normal"
+
     return JSONResponse(content=weather_dataset)
