@@ -91,6 +91,31 @@ async def get_default_map(date=None):
     return JSONResponse(content=weather_dataset)
 
 
+@app.get("/location_search",
+         name="Location name search.",
+         description="Location search API. It is Internally calling the open-meteo location search API",
+         response_model=LocationSearchResponse,
+         responses={
+             200: {"description": "Valid response as a JSON format."},
+             429: {"description": "Too many requests"},
+             404: {"description": "Server error!"},
+             204: {"description": "Data not found for the location!"}
+         })
+async def location_search_by_name(name):
+    locations = get_location_data(name=name)
+    if isinstance(locations, int):
+        raise HTTPException(status_code=locations)
+    elif isinstance(locations, list):
+        results = []
+        for doc in locations:
+            doc['location'] = doc.pop('name')
+            doc_ = LocationSearchResult(**doc)
+            results.append(doc_.dict())
+        return JSONResponse(content=results)
+    else:
+        raise HTTPException(status_code=404,  detail="Server Error")
+
+
 @app.post(
     "/forcast_temperature",
     name="Temperature deviation check",
@@ -130,31 +155,3 @@ async def forcast_temperature_data(payload: ForcastTemperature):
             weather_data['deviation_status'] = "normal"
 
     return JSONResponse(content=weather_dataset)
-
-
-
-
-@app.get("/location_search",
-         name="Location name search.",
-         description="Location search API. It is Internally calling the open-meteo location search API",
-         response_model=LocationSearchResponse,
-         responses={
-             200: {"description": "Valid response as a JSON format."},
-             429: {"description": "Too many requests"},
-             404: {"description": "Server error!"},
-             204: {"description": "Data not found for the location!"}
-         })
-async def location_search_by_name(name):
-    locations = get_location_data(name=name)
-    if isinstance(locations, int):
-        raise HTTPException(status_code=locations)
-    elif isinstance(locations, list):
-        results = []
-        for doc in locations:
-            doc['location'] = doc.pop('name')
-            doc_ = LocationSearchResult(**doc)
-            results.append(doc_.dict())
-        return JSONResponse(content=results)
-    else:
-        raise HTTPException(status_code=404,  detail="Server Error")
-

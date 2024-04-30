@@ -1,11 +1,14 @@
 import hashlib
-import logging as logger
+import logging as logger # constructor call
 import traceback
-
 import requests
 
 
 def _generate_unique_id(date, latitude, longitude):
+    """
+    Creating uniqueId to handle the duplicated entries in MongoDB document collection.
+
+    """
     combined_str = f"{date}_{latitude}_{longitude}"
     hash_obj = hashlib.sha256(combined_str.encode())
     unique_id = hash_obj.hexdigest()
@@ -13,6 +16,9 @@ def _generate_unique_id(date, latitude, longitude):
 
 
 def get_location_data(name):
+    """
+    Location Search on open-meteo API
+    """
     url = f"https://geocoding-api.open-meteo.com/v1/search?name={name}&count=5&language=en&format=json"
     resp = requests.get(url)
     if resp.status_code != 200:
@@ -22,6 +28,7 @@ def get_location_data(name):
     
     resp_data = resp.json()
     if not resp_data.get('results'):
+        logger.warning(f"No data found for Location API {url}")
         return 204 # No data found status
     else:
         return resp_data['results']
@@ -29,6 +36,9 @@ def get_location_data(name):
     
 
 def get_weather_data(lat, long, location=None, start_date=None, end_date=None):
+    """
+    WeatherData fetch on Open-Meteo API
+    """
     url = "https://api.open-meteo.com/v1/forecast?" \
           f"latitude={lat}&longitude={long}&daily=temperature_2m_max,temperature_2m_min"
     if start_date and end_date:
