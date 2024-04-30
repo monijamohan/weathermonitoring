@@ -2,21 +2,7 @@ from pydantic import BaseModel, Field
 from typing import List
 
 
-# [
-#   {
-#     # "uniqueId": "6630ec7ceb72985f75994ac7",
-#     "date": "2024-04-30",
-#     "doc_id": "d8647f05237e7adef83b9bbf1d061bdd71b0e9329f622190aa3384fcd96b932d",
-#     "latitude": 59.430477,
-#     "location": "Sollentuna",
-#     "longitude": 17.958206,
-#     "max_temperature": 19.1,
-#     "min_temperature": 3
-#   }
-# ]
-
-
-class LocationAPI(BaseModel):
+class LocationMeta(BaseModel):
     location: str = Field(
         title="Location from the given sample",
         examples=["Sollentuna", "Delhi"]
@@ -29,6 +15,14 @@ class LocationAPI(BaseModel):
         title="Longitude of the coordinate",
         examples=[17.95093, 14.65]
     )
+
+class LocationSearchResult(LocationMeta):
+    country: str = Field(
+        title="Country name",\
+        examples=["Sweden", "United States"]
+    )
+
+class LocationAPI(LocationMeta):
     min_temperature: float = Field(
         title="Minimum threshold temperature",
         examples=[7.95093, 4.65]
@@ -64,3 +58,4 @@ class ForcastTemperatureResponse(LocationAPI):
     )
 
 LocationListResponse = List[ForcastTemperatureResponse]
+LocationSearchResponse = List[LocationSearchResult]

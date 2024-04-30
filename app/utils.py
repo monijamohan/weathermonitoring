@@ -12,6 +12,22 @@ def _generate_unique_id(date, latitude, longitude):
     return unique_id
 
 
+def get_location_data(name):
+    url = f"https://geocoding-api.open-meteo.com/v1/search?name={name}&count=5&language=en&format=json"
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        logger.error(f"Request failed for the Location API {url}")
+        return status_code
+    logger.info(f"Got 200 response for Location API {url}")
+    
+    resp_data = resp.json()
+    if not resp_data.get('results'):
+        return 204 # No data found status
+    else:
+        return resp_data['results']
+
+    
+
 def get_weather_data(lat, long, location=None, start_date=None, end_date=None):
     url = "https://api.open-meteo.com/v1/forecast?" \
           f"latitude={lat}&longitude={long}&daily=temperature_2m_max,temperature_2m_min"

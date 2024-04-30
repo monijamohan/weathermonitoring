@@ -6,8 +6,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from pymongo import MongoClient
 
-from .utils import get_weather_data
-from .models import ForcastTemperature, LocationListResponse
+from .utils import get_weather_data, get_location_data
+from .models import ForcastTemperature, LocationListResponse, LocationSearchResponse, LocationSearchResult
 
 logger = logging.getLogger()
 
@@ -55,13 +55,13 @@ app = FastAPI(
 )
 
 @app.get("/default_map",
-         name="Default Map for the home page",
+         name="Default Map Data",
          description="Returns a Map data for the locations in DB. If DB is not accessible it will show the default location",
          response_model=LocationListResponse,
          responses={
              200: {"description": "Valid response as a JSON format."},
              429: {"description": "Too many requests"},
-             404: {"description": "No data found from API!"}
+             404: {"description": "Not found error!"}
          })
 async def get_default_map(date=None):
     # todo: Handle TimeZones
@@ -93,8 +93,15 @@ async def get_default_map(date=None):
 
 @app.post(
     "/forcast_temperature",
-    description="Temerature forcast fore the given days. It will take a minimum threshold temperature and maximum threshold temperature. Then returns the deviation status of of actual temperature.",
-    response_model=LocationListResponse
+    name="Temperature deviation check",
+    description="Temerature forcast for the given days. It will take a minimum threshold temperature and maximum threshold temperature. Then returns the deviation status of of actual temperature.",
+    response_model=LocationListResponse,
+    responses={
+             200: {"description": "Valid response as a JSON format."},
+             429: {"description": "Too many requests"},
+             404: {"description": "Not found error!"},
+             204: {"description": "Data not found for the location!"}
+         }
 )
 async def forcast_temperature_data(payload: ForcastTemperature):
     weather_dataset = get_weather_data(lat=payload.latitude,
@@ -123,3 +130,31 @@ async def forcast_temperature_data(payload: ForcastTemperature):
             weather_data['deviation_status'] = "normal"
 
     return JSONResponse(content=weather_dataset)
+
+
+
+
+@app.get("/location_search",
+         name="Location name search.",
+         description="Location search API. It is Internally calling the open-meteo location search API",
+         response_model=LocationSearchResponse,
+         responses={
+             200: {"description": "Valid response as a JSON format."},
+             429: {"description": "Too many requests"},
+             404: {"description": "Server error!"},
+             204: {"description": "Data not found for the location!"}
+         })
+async def location_search_by_name(name):
+    locations = get_location_data(name=name)
+    if isinstance(locations, int):
+        raise HTTPException(status_code=locations)
+    elif isinstance(locations, list):
+        results = []
+        for doc in locations:
+            doc['location'] = doc.pop('name')
+            doc_ = LocationSearchResult(**doc)
+            results.append(doc_.dict())
+        return JSONResponse(content=results)
+    else:
+        raise HTTPException(status_code=404,  detail="Server Error")
+
