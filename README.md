@@ -1,26 +1,28 @@
 # Weather Forcast API
 
-
 ### High Level Diagram of the implementation:
 
 ![Image Alt Text](HLD.jpeg)
 
----
+### For Details on the implemented components please check  [Exercise](EXCERSICE.md)
 
+---
 
 ## Local Deployment:
 
 Initially clone the repo from the github.
 
-Clone URL: `https://github.com/monijamohan/weathermonitoring.git`
-GitHub Project URL: `https://github.com/monijamohan/weathermonitoring`
+- Clone URL: `https://github.com/monijamohan/weathermonitoring.git` <br>
+- GitHub Project URL: `https://github.com/monijamohan/weathermonitoring`
 
 ### System Prerequisites:
 
 - **MongoDB**:  create `temperature` collection under the `weatherdata` DB.
 - **Docker**: should be pre-installed on the system.
 
-### Command to build Docker image:
+---
+
+### Build and Run the Docker:
 
 Go the cloned directory of this project and build the docker image for backend as,
 
