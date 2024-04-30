@@ -15,7 +15,7 @@
 
 ### Command to build Docker image:
 
-Go the cloned directory opf this project and build the docker image for backend as,
+Go the cloned directory of this project and build the docker image for backend as,
 
 `docker build --no-cache -t forcast_api .`
 
