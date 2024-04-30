@@ -1,7 +1,5 @@
 import logging
 
-from .main import app
-
 # # Config Default # To log in the Running container
 logging.basicConfig(
     level=logging.INFO,

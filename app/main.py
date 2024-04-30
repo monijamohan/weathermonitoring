@@ -32,10 +32,9 @@ except Exception:
     # logger.warning(traceback.format_exc())
     logger.warning("Mongo Connection Failed! Skipping MongoDB related operations!")
     hasMongoObj = False
-# todo : defaultlocation to exception
-with open("/code/app/DEFAULT_LOCATION.json", 'r') as file:  # Default location conf
-    logger.info("Reading DEFAULT_LOCATION.json ...")
-    default_location = json.load(file)
+    with open("/code/app/DEFAULT_LOCATION.json", 'r') as file:  # Default conf location
+        logger.info("Reading DEFAULT_LOCATION.json ...")
+        default_location = json.load(file)
 
 
 def upsert_temperature(temperature_data):
