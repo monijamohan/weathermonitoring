@@ -82,12 +82,12 @@ async def get_default_map(date=None):
     # Approach 2: Fetch temperature of Default location for the current date via API.
     weather_dataset = get_weather_data(lat=default_location['latitude'],
                                        long=default_location['latitude'],
-                                       location=default_location['name'],
+                                       location=default_location['location'],
                                        start_date=date, end_date=date)
     if not weather_dataset:
         logger.warning(f"No weather data found for Default location: {default_location}")
         raise HTTPException(status_code=404, detail="Data Not Found!")
-    logger.info(f"Results fetched from API for the location {default_location['name']}")
+    logger.info(f"Results fetched from API for the location {default_location['location']}")
     return JSONResponse(content=weather_dataset)
 
 
