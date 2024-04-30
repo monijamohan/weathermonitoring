@@ -1,0 +1,15 @@
+{
+  "id": 2675408,
+  "name": "Sollentuna",
+  "latitude": 59.42804,
+  "longitude": 17.95093,
+  "elevation": 25,
+  "feature_code": "PPLA2",
+  "country_code": "SE",
+  "admin1_id": 2673722,
+  "timezone": "Europe/Stockholm",
+  "population": 139606,
+  "country_id": 2661886,
+  "country": "Sweden",
+  "admin1": "Stockholm"
+}
