@@ -1,0 +1,37 @@
+import unittest
+from app.utils import get_deviation_status
+from app.utils import generate_unique_id
+
+
+class TestDeviationStatus(unittest.TestCase):
+    def test_normal(self):
+        self.assertEqual(get_deviation_status(25, 15, 30, 10), "normal")
+
+    def test_increased(self):
+        self.assertEqual(get_deviation_status(35, 20, 30, 10), "increased")
+
+    def test_decreased(self):
+        self.assertEqual(get_deviation_status(25, 5, 30, 10), "decreased")
+
+    def test_increased_and_decreased(self):
+        self.assertEqual(get_deviation_status(35, 5, 30, 10), "increased&decreased")
+
+    def test_equal_to_limits(self):
+        self.assertEqual(get_deviation_status(30, 10, 30, 10), "normal")
+        self.assertEqual(get_deviation_status(30, 10, 30, 5), "decreased")
+        self.assertEqual(get_deviation_status(35, 10, 30, 10), "increased")
+        self.assertEqual(get_deviation_status(35, 5, 30, 5), "increased&decreased")
+
+
+class TestUniqueIdGeneration(unittest.TestCase):
+    def test_unique_id_generation(self):
+        date = "2024-04-30"
+        latitude = 40.7128
+        longitude = -74.0060
+        expected_unique_id = hashlib.sha256(f"{date}_{latitude}_{longitude}".encode()).hexdigest()
+        generated_unique_id = _generate_unique_id(date, latitude, longitude)
+        self.assertEqual(generated_unique_id, expected_unique_id)
+
+
+if __name__ == '__main__':
+    unittest.main()

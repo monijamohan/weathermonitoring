@@ -1,11 +1,10 @@
 import hashlib
-import logging as logger  # constructor call
 import traceback
-
 import requests
+import logging as logger  # constructor call
 
 
-def _generate_unique_id(date, latitude, longitude):
+def generate_unique_id(date, latitude, longitude):
     """
     Creating uniqueId to handle the duplicated entries in MongoDB document collection.
 
@@ -60,7 +59,7 @@ def get_weather_data(lat, long, location=None, start_date=None, end_date=None):
                         "max_temperature": resp_data['daily']["temperature_2m_max"][idx],
                         "location": location
                         }
-            day_data['doc_id'] = _generate_unique_id(day_data['date'], str(day_data['latitude']),
+            day_data['doc_id'] = generate_unique_id(day_data['date'], str(day_data['latitude']),
                                                      str(day_data['longitude']))
             weather_data_set.append(day_data)
     except Exception as ex:
