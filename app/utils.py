@@ -67,3 +67,14 @@ def get_weather_data(lat, long, location=None, start_date=None, end_date=None):
         logger.error(traceback.format_exc())
         raise ex
     return weather_data_set
+
+
+def get_deviation_status(max_temp, min_temp, max_limit, min_limit):
+    if (max_temp > max_limit) and (min_temp < min_limit):
+        return "increased&decreased"
+    elif max_temp > max_limit:
+        return "increased"
+    elif min_temp < min_limit:
+        return "decreased"
+    else:
+        return "normal"
