@@ -7,9 +7,10 @@ from fastapi.responses import JSONResponse
 from pymongo import MongoClient
 
 from .utils import get_weather_data
-from .models import ForcastTemperature, ForcastTemperatureResponse
+from .models import ForcastTemperature, LocationListResponse
 
 logger = logging.getLogger()
+
 
 # MongoDB Connection Initialize
 # # Todo: Enable Retry Connection Pool
@@ -56,7 +57,7 @@ app = FastAPI(
 @app.get("/default_map",
          name="Default Map for the home page",
          description="Returns a Map data for the locations in DB. If DB is not accessible it will show the default location",
-         # response_model=ResponseHomeMap,
+         response_model=LocationListResponse,
          responses={
              200: {"description": "Valid response as a JSON format."},
              429: {"description": "Too many requests"},
@@ -93,7 +94,7 @@ async def get_default_map(date=None):
 @app.post(
     "/forcast_temperature",
     description="Temerature forcast fore the given days. It will take a minimum threshold temperature and maximum threshold temperature. Then returns the deviation status of of actual temperature.",
-    response_model=ForcastTemperatureResponse
+    response_model=LocationListResponse
 )
 async def forcast_temperature_data(payload: ForcastTemperature):
     weather_dataset = get_weather_data(lat=payload.latitude,
