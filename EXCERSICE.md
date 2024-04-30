@@ -98,7 +98,10 @@ Minimum Inputs:
 
 - A NoSQL database used for data persistence.
 - Stores historical weather data results that fetches from the open API.
-- Ensures data availability and reliability.
+- Ensures data availability and reliability.<br>
+<br>
+  **`Note`**: I handled this application to run without MongoDB instance.<br>
+  If the DB is not found, then the data calls will always depend on the Open Meteo API.
 
 ### 5. Logging :- FileHandler & StreamHandlers:
 
