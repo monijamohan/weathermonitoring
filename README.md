@@ -37,4 +37,8 @@ Once the image is created, Please up the container by,
 - Documentation: http://localhost:8000/documentation
 - Playground: http://localhost:8000/playground
 
+The project is deployed in github dev CodeSpace, Here you can see the documentation and Playground.
+- Documentation: https://fluffy-sniffle-4jjw65xxwggf7qr7-8000.app.github.dev/documentation
+- Playground: https://fluffy-sniffle-4jjw65xxwggf7qr7-8000.app.github.dev/playground
 ---
+
