@@ -50,6 +50,7 @@ Minimum Inputs:
 - Responsible for handling user requests, data processing, and interaction with other components.
 - Provides REST APIs for querying DB, Forcast API calls, and for processing.
 - Utilizes FastAPI for better Documentation, Playground experience and asynchronous communication.
+- Also enabled the unittests for the process functions on this project.
 
   #### Endpoints:
 

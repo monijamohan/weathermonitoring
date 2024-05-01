@@ -19,25 +19,37 @@ try:
     # Assuming a MongoDB is up in the localhost. Also expecting a 'weatherdata' DB and 'temperature' Collection in it.
     mongo_client = MongoClient(
         'mongodb://host.docker.internal:27017/')  # On local docker instance if the DB is in same server
+    logger.info(mongo_client.server_info())
 
     if not 'weatherdata' in mongo_client.list_database_names():
         temp_collection = None
-    db = mongo_client['weatherdata']
-    logger.info(f"CollectionNames: {db.list_collection_names()}")
-    if 'temperature' in db.list_collection_names():
-        logger.info(f"CollectionNames: {db.list_collection_names()}")
-    temp_collection = db.temperature
-    hasMongoObj = True
+        hasMongoObj = False
+        logger.warning("No DB found with the name 'weatherdata'")
+    else:
+        db = mongo_client['weatherdata']
+        logger.info("DB found with the name 'weatherdata'")
+        if not 'temperature' in db.list_collection_names():
+            temp_collection = None
+            hasMongoObj = False
+            logger.warning("No Collection found with the name 'temperature'")
+        else:
+            temp_collection = db.temperature
+            hasMongoObj = True
+            logger.info("MongoDB Collection found with the name 'temperature'")
 except Exception:
     # logger.warning(traceback.format_exc())
     logger.warning("Mongo Connection Failed! Skipping MongoDB related operations!")
     hasMongoObj = False
+
+if not hasMongoObj:
+    """Fetch a default location for the homepage mapdata."""
     with open("/code/app/DEFAULT_LOCATION.json", 'r') as file:  # Default conf location
         logger.info("Reading DEFAULT_LOCATION.json ...")
         default_location = json.load(file)
 
 
 def upsert_temperature(temperature_data):
+    """To write temperature data to the temperature collection"""
     result = temp_collection.update_one({'uniqueId': temperature_data['doc_id']}, {'$set': temperature_data},
                                         upsert=True)
     if result.upserted_id is not None:
@@ -64,8 +76,9 @@ app = FastAPI(
              429: {"description": "Too many requests"},
              404: {"description": "Not found error!"}
          })
-async def get_default_map(date=None):
+async def get_default_map(date=None):  # Default date as current date
     # todo: Handle TimeZones
+    # todo: Enable mem Cache
     date = datetime.now().strftime("%Y-%m-%d") if not date else date
     # Approach1: Fetch from DB for the current date
     if hasMongoObj:
@@ -102,7 +115,7 @@ async def get_default_map(date=None):
              404: {"description": "Server error!"},
              204: {"description": "Data not found for the location!"}
          })
-async def location_search_by_name(name):
+async def location_search_by_name(name: str):
     locations = get_location_data(name=name)
     # checking the response types
     if isinstance(locations, int):
