@@ -5,6 +5,7 @@ from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from pymongo import MongoClient
+from fastapi.middleware.cors import CORSMiddleware
 
 from .models import ForcastTemperature, LocationListResponse, LocationSearchResponse, LocationSearchResult, \
     ForcastTemperatureResponse
@@ -42,11 +43,16 @@ except Exception:
     hasMongoObj = False
 
 if not hasMongoObj:
-    """Fetch a default location for the homepage mapdata."""
+    default_location = open_default_json()
+
+
+def open_default_json():
     with open("/code/app/DEFAULT_LOCATION.json", 'r') as file:  # Default conf location
         logger.info("Reading DEFAULT_LOCATION.json ...")
         default_location = json.load(file)
-
+        logger.info(default_location)
+        return default_location
+    
 
 def upsert_temperature(temperature_data):
     """To write temperature data to the temperature collection"""
@@ -66,6 +72,15 @@ app = FastAPI(
     version=open("VERSION.txt").read().strip()
 )
 
+origins = ['http://localhost:4200', 'https://localhost:8000']
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/default_map",
          name="Default Map Data",
@@ -94,8 +109,10 @@ async def get_default_map(date=None):  # Default date as current date
         logger.warning(f"No results found from MongoDB for date {date}")
 
     # Approach 2: Fetch temperature of Default location for the current date via API.
+    default_location = open_default_json()
+    print("default loc",default_location)
     weather_dataset = get_weather_data(lat=default_location['latitude'],
-                                       long=default_location['latitude'],
+                                       long=default_location['longitude'],
                                        location=default_location['location'],
                                        start_date=date, end_date=date)
     if not weather_dataset:
