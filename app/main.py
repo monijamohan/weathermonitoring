@@ -1,5 +1,4 @@
 import json
-import logging
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException
@@ -11,52 +10,35 @@ from .models import ForcastTemperature, LocationListResponse, LocationSearchResp
     ForcastTemperatureResponse
 from .utils import get_weather_data, get_location_data, get_deviation_status
 
-logger = logging.getLogger()
+from app import logger
 
 # MongoDB Connection Initialize
 # # Todo: Enable Retry Connection Pool
 logger.info("MongoConnection initiated...")
-try:
-    # Assuming a MongoDB is up in the localhost. Also expecting a 'weatherdata' DB and 'temperature' Collection in it.
-    mongo_client = MongoClient(
-        'mongodb://host.docker.internal:27017/')  # On local docker instance if the DB is in same server
-    logger.info(mongo_client.server_info())
 
-    if not 'weatherdata' in mongo_client.list_database_names():
-        temp_collection = None
-        hasMongoObj = False
-        logger.warning("No DB found with the name 'weatherdata'")
-    else:
-        db = mongo_client['weatherdata']
-        logger.info("DB found with the name 'weatherdata'")
-        if not 'temperature' in db.list_collection_names():
-            temp_collection = None
-            hasMongoObj = False
-            logger.warning("No Collection found with the name 'temperature'")
-        else:
-            temp_collection = db.temperature
-            hasMongoObj = True
-            logger.info("MongoDB Collection found with the name 'temperature'")
-except Exception:
-    # logger.warning(traceback.format_exc())
-    logger.warning("Mongo Connection Failed! Skipping MongoDB related operations!")
-    hasMongoObj = False
+DB_NAME = 'weatherdata'
+COLLECTION_NAME = 'temperature'
+MONGO_URI = 'mongodb://host.docker.internal:27018/'
 
-if not hasMongoObj:
-    default_location = open_default_json()
-
+mongo_client = MongoClient(MONGO_URI)
+logger.info(mongo_client.server_info())
+db = mongo_client[DB_NAME]
+if COLLECTION_NAME not in db.list_collection_names():
+    # Create the temperature collection if it doesn't exist
+    db.create_collection(COLLECTION_NAME)
+    logger.info(f"---Collection '{COLLECTION_NAME}' created.")
+collection_obj = db[COLLECTION_NAME]
 
 def open_default_json():
     with open("/code/app/DEFAULT_LOCATION.json", 'r') as file:  # Default conf location
         logger.info("Reading DEFAULT_LOCATION.json ...")
-        default_location = json.load(file)
-        logger.info(default_location)
-        return default_location
-    
+        default_location_ = json.load(file)
+        logger.info(default_location_)
+        return default_location_
 
 def upsert_temperature(temperature_data):
     """To write temperature data to the temperature collection"""
-    result = temp_collection.update_one({'uniqueId': temperature_data['doc_id']}, {'$set': temperature_data},
+    result = collection_obj.update_one({'uniqueId': temperature_data['doc_id']}, {'$set': temperature_data},
                                         upsert=True)
     if result.upserted_id is not None:
         logger.info(f"New document inserted with unique ID: {temperature_data['doc_id']}")
@@ -96,30 +78,28 @@ async def get_default_map(date=None):  # Default date as current date
     # todo: Enable mem Cache
     date = datetime.now().strftime("%Y-%m-%d") if not date else date
     # Approach1: Fetch from DB for the current date
-    if hasMongoObj:
-        result_obj = temp_collection.find({"date": date})
-        weather_dataset = []
-        for weather_data in result_obj:
-            doc_ = ForcastTemperatureResponse(**weather_data)
-            weather_dataset.append(doc_.dict())
+    result_obj = collection_obj.find({"date": date})
+    weather_dataset = []
+    for weather_data in result_obj:
+        doc_ = ForcastTemperatureResponse(**weather_data)
+        weather_dataset.append(doc_.dict())
 
-        if weather_dataset:
-            logger.info(f"Results fetched from MongoDB for the date {date}")
-            return JSONResponse(content=weather_dataset)
-        logger.warning(f"No results found from MongoDB for date {date}")
+    if weather_dataset:
+        logger.info(f"Results fetched from MongoDB for the date {date}")
+        return JSONResponse(content=weather_dataset)
 
-    # Approach 2: Fetch temperature of Default location for the current date via API.
-    default_location = open_default_json()
-    print("default loc",default_location)
-    weather_dataset = get_weather_data(lat=default_location['latitude'],
-                                       long=default_location['longitude'],
-                                       location=default_location['location'],
-                                       start_date=date, end_date=date)
-    if not weather_dataset:
-        logger.warning(f"No weather data found for Default location: {default_location}")
-        raise HTTPException(status_code=404, detail="Data Not Found!")
-    logger.info(f"Results fetched from API for the location {default_location['location']}")
-    return JSONResponse(content=weather_dataset)
+    # Approach 2: Fetch temperature of Default location for the current date via Open-API.
+    else:
+        default_location = open_default_json()
+        weather_dataset = get_weather_data(lat=default_location['latitude'],
+                                           long=default_location['longitude'],
+                                           location=default_location['location'],
+                                           start_date=date, end_date=date)
+        if not weather_dataset:
+            logger.warning(f"No weather data found for Default location: {default_location}")
+            raise HTTPException(status_code=404, detail="Data Not Found!")
+        logger.info(f"Results fetched from API for the location {default_location['location']}")
+        return JSONResponse(content=weather_dataset)
 
 
 @app.get("/location_search",
@@ -172,8 +152,7 @@ async def forcast_temperature_data(payload: ForcastTemperature):
 
     # Write responses to MongoDB
     for weather_data in weather_dataset:
-        if hasMongoObj:
-            upsert_temperature(weather_data)
+        upsert_temperature(weather_data)
         # check for deviation:
         weather_data['deviation_status'] = get_deviation_status(
             max_temp=weather_data['max_temperature'],
