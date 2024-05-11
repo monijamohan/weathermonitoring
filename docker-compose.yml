@@ -1,10 +1,22 @@
-version: '3.4'
+version: '3.8'
 
 services:
-  app:
-    image: forcast_api
-    volumes:
-      - .:/code/
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    command: sh start.sh
+    volumes:
+      - ./app:/code/app
+      - ./tests:/code/tests
+      - ./logs:/code/logs
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    volumes:
+      - ./data/db:/data/db
+    ports:
+      - "27018:27017"
