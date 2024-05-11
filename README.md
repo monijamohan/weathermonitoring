@@ -17,28 +17,24 @@ Initially clone the repo from the github.
 
 ### System Prerequisites:
 
-- **MongoDB**:  create `temperature` collection under the `weatherdata` DB.
 - **Docker**: should be pre-installed on the system.
 
 ---
 
-### Build and Run the Docker:
+### Build and Run:
 
-Go the cloned directory of this project and build the docker image for backend as,
+Go to the cloned project directory and run the Docker-compose.yml as
 
-`docker build --no-cache -t forcast_api .`
+`docker-compose up --build`
 
-Once the image is created, Please up the container by,
+This will build and run the following two containers,
+- FastAPI
+- MongoDB
 
-`docker compose up`
-
-#### Once the container is UP, then the detailed documentation and API playground will serve in the 8000 port.
+#### Once the containers are UP, then the detailed documentation and API playground will serve in the 8000 port as follows.
 
 - Documentation: http://localhost:8000/documentation
 - Playground: http://localhost:8000/playground
 
-Optionally the project is deployed in github dev CodeSpace, Here you can see the documentation and Playground.
-- Documentation: https://fluffy-sniffle-4jjw65xxwggf7qr7-8000.app.github.dev/documentation
-- Playground: https://fluffy-sniffle-4jjw65xxwggf7qr7-8000.app.github.dev/playground
-
+#### 
 ---
