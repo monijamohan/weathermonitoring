@@ -1,8 +1,7 @@
 import hashlib
 import traceback
 import requests
-import logging as logger  # constructor call
-
+from app import logger
 
 def generate_unique_id(date, latitude, longitude):
     """
@@ -23,7 +22,7 @@ def get_location_data(name):
     resp = requests.get(url)
     if resp.status_code != 200:
         logger.error(f"Request failed for the Location API {url}")
-        return status_code
+        return resp.status_code
     logger.info(f"Got 200 response for Location API {url}")
 
     resp_data = resp.json()
